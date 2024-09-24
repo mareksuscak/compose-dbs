@@ -30,7 +30,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - modata:/data/db
-      - ./docker/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
     healthcheck:
       test: test $$(echo "rs.initiate({'_id':'rs0','members':[{'_id':0,'host':'host.docker.internal:27017'}]}).ok || rs.status().ok" | mongosh -u root -p root --quiet) -eq 1
       interval: 10s
