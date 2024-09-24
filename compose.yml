@@ -52,6 +52,8 @@ services:
       - mydata:/var/lib/mysql:rw
     ports:
       - "3306:3306"
+    profiles:
+      - mysql
 
   postgres:
     build:
