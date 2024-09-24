@@ -1,0 +1,150 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/compose/compose-file/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+
+services:
+
+  # This container was set up with replication based on the following guide:
+  # https://medium.com/workleap/the-only-local-mongodb-replica-set-with-docker-compose-guide-youll-ever-need-2f0b74dd8384
+  mongodb:
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    environment:
+      MONGO_INITDB_DATABASE: app_dev
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_NONROOT_USERNAME: app
+      MONGO_INITDB_NONROOT_PASSWORD: app
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - db-data:/data/db
+      - ./docker/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+    healthcheck:
+      test: test $$(echo "rs.initiate({'_id':'rs0','members':[{'_id':0,'host':'host.docker.internal:27017'}]}).ok || rs.status().ok" | mongosh -u root -p root --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+
+  mysql:
+    # Use Oracle's MySQL image which supports ARM64 (Apple Silicon)
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=app_dev
+    volumes:
+      - mydata:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+
+  postgres:
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_DB: app_dev
+      POSTGRES_USER: app_dev
+      POSTGRES_PASSWORD: app_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app
+    profiles:
+      - postgres
+
+  redis:
+    image: redis:7.4-alpine
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rddata:/data
+    networks:
+      - app
+    profiles:
+      - redis
+
+  elasticsearch:
+    image: elasticsearch:8.15.1
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    expose:
+      - 9200
+      - 9300
+    ports:
+      - 9200:9200
+      - 9300:9300
+    healthcheck:
+        test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - app
+    profiles:
+      - elasticsearch
+
+  kibana:
+    image: kibana:8.15.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es:9200/
+    expose:
+      - 5601
+    ports:
+      - 5601:5601
+    depends_on:
+      es:
+        condition: service_healthy
+    networks:
+      - app
+    profiles:
+      - elasticsearch
+
+networks:
+  app:
+
+volumes:
+  mydata:
+  pgdata:
+  esdata:
+  rddata:
