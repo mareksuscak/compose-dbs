@@ -41,7 +41,7 @@ services:
   mysql:
     # Use Oracle's MySQL image which supports ARM64 (Apple Silicon)
     build:
-      context: ./mongo
+      context: ./mysql
       dockerfile: Dockerfile
     command: --default-authentication-plugin=mysql_native_password
     environment:
@@ -55,7 +55,7 @@ services:
 
   postgres:
     build:
-      context: ./mongo
+      context: ./postgres
       dockerfile: Dockerfile
     expose:
       - 5432
