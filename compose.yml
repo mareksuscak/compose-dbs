@@ -35,6 +35,8 @@ services:
       test: test $$(echo "rs.initiate({'_id':'rs0','members':[{'_id':0,'host':'host.docker.internal:27017'}]}).ok || rs.status().ok" | mongosh -u root -p root --quiet) -eq 1
       interval: 10s
       start_period: 30s
+    profiles:
+      - mongo
 
   mysql:
     # Use Oracle's MySQL image which supports ARM64 (Apple Silicon)
