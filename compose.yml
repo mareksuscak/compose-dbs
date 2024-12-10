@@ -96,6 +96,24 @@ services:
     profiles:
       - redis
 
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ['CMD', 'valkey-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - vkdata:/data
+    networks:
+      - app
+    profiles:
+      - valkey
+
   elasticsearch:
     image: elasticsearch:8.16.1
     environment:
@@ -152,3 +170,4 @@ volumes:
   pgdata:
   esdata:
   rddata:
+  vkdata:
