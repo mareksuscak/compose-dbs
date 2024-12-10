@@ -1,5 +1,5 @@
 # Use the official MongoDB image as the base image
-FROM mongo:6.0.18
+FROM mongo:8.0.4
 
 # Heads Up!
 # Once we upgrade to a later version, we may need to tweak this, see the guide:
