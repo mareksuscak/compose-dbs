@@ -18,10 +18,10 @@ services:
       dockerfile: Dockerfile
     environment:
       MONGO_INITDB_DATABASE: app_dev
+      MONGO_INITDB_NONROOT_USERNAME: app_dev
+      MONGO_INITDB_NONROOT_PASSWORD: app_dev
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_NONROOT_USERNAME: app
-      MONGO_INITDB_NONROOT_PASSWORD: app
     expose:
       - 27017
     ports:
