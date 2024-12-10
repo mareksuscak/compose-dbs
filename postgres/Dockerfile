@@ -1,18 +1,18 @@
-ARG ALPINE=3.20
-ARG PG_MAJOR=16
-ARG PG_MINOR=4
+ARG ALPINE=3.21
+ARG PG_MAJOR=17
+ARG PG_MINOR=2
 
 FROM postgres:$PG_MAJOR.$PG_MINOR-alpine$ALPINE
 
 # Make sure the below versions reflect the versions listed here:
 # https://cloud.google.com/sql/docs/postgres/extensions#data-type-extensions
-ARG PG_VECTOR=0.7.0
+ARG PG_VECTOR=0.8.0
 ARG PG_HLL=2.18
-ARG PG_POSTGIS=3.4.0
-ARG PG_REPACK=1.5.0
-ARG PG_PARTMAN=5.0.1
-ARG PG_CRON=1.6.2
-ARG PG_SQUEEZE=1_5_0
+ARG PG_POSTGIS=3.5.0
+ARG PG_REPACK=1.5.1
+ARG PG_PARTMAN=5.2.1
+ARG PG_CRON=1.6.4
+ARG PG_SQUEEZE=1_7_0
 
 RUN set -eux; \
     # Install build dependencies
